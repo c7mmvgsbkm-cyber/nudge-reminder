@@ -171,15 +171,16 @@ cron.schedule('* * * * *', async () => {
     for (const sub of emailSubs) {
       if (sub.sent || new Date(sub.targetAt) > now) continue;
       try {
-        await resend.emails.send({
+        const { data, error } = await resend.emails.send({
           from: '千葉大学 駐輪リマインダー <onboarding@resend.dev>',
           to: sub.email,
           subject: '駐輪許可証のお知らせ',
           html: `<p style="font-size:16px">🚲 <strong>今日は忘れずに許可証を買おう！</strong></p><p style="color:#888;font-size:12px">千葉大学 キャンパス整備係</p>`
         });
+        if (error) throw new Error(JSON.stringify(error));
         sub.sent = true;
         appendLog('notifications', { type: 'email', status: 'success', scheduled_time: sub.scheduledTime });
-        console.log(`[${now.toISOString()}] メール送信成功: ${sub.email}`);
+        console.log(`[${now.toISOString()}] メール送信成功: ${sub.email} id=${data?.id}`);
       } catch (err) {
         console.error(`[${now.toISOString()}] メール送信失敗:`, err.message);
         appendLog('notifications', { type: 'email', status: 'failed', error: err.message });
