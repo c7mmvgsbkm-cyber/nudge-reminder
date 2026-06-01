@@ -106,13 +106,15 @@ app.post('/subscribe-email', (req, res) => {
 
   const [hours, minutes] = scheduledTime.split(':').map(Number);
   let targetAt;
+  // User input is JST (UTC+9). Convert to UTC by subtracting 9 hours.
+  const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
   if (scheduledDate && /^\d{4}-\d{2}-\d{2}$/.test(scheduledDate)) {
     const [y, mo, d] = scheduledDate.split('-').map(Number);
-    targetAt = new Date(y, mo - 1, d, hours, minutes, 0, 0);
+    targetAt = new Date(Date.UTC(y, mo - 1, d, hours, minutes) - JST_OFFSET_MS);
   } else {
-    targetAt = new Date();
-    targetAt.setDate(targetAt.getDate() + 1);
-    targetAt.setHours(hours, minutes, 0, 0);
+    const tomorrow = new Date(Date.now() - JST_OFFSET_MS);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    targetAt = new Date(Date.UTC(tomorrow.getUTCFullYear(), tomorrow.getUTCMonth(), tomorrow.getUTCDate(), hours, minutes) - JST_OFFSET_MS);
   }
 
   const subs = readJSON(EMAIL_SUBS_FILE).filter(s => s.email !== email);
