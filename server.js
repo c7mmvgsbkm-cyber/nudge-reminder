@@ -89,7 +89,7 @@ app.get('/track-access', (req, res) => {
 
 // メール登録
 app.post('/subscribe-email', (req, res) => {
-  const { email, scheduledTime } = req.body;
+  const { email, scheduledDate, scheduledTime } = req.body;
 
   if (!email || !scheduledTime) {
     return res.status(400).json({ error: 'email と scheduledTime は必須です' });
@@ -105,9 +105,15 @@ app.post('/subscribe-email', (req, res) => {
   }
 
   const [hours, minutes] = scheduledTime.split(':').map(Number);
-  const targetAt = new Date();
-  targetAt.setDate(targetAt.getDate() + 1);
-  targetAt.setHours(hours, minutes, 0, 0);
+  let targetAt;
+  if (scheduledDate && /^\d{4}-\d{2}-\d{2}$/.test(scheduledDate)) {
+    const [y, mo, d] = scheduledDate.split('-').map(Number);
+    targetAt = new Date(y, mo - 1, d, hours, minutes, 0, 0);
+  } else {
+    targetAt = new Date();
+    targetAt.setDate(targetAt.getDate() + 1);
+    targetAt.setHours(hours, minutes, 0, 0);
+  }
 
   const subs = readJSON(EMAIL_SUBS_FILE).filter(s => s.email !== email);
   subs.push({ email, scheduledTime, targetAt: targetAt.toISOString(), sent: false, createdAt: new Date().toISOString() });

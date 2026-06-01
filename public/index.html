@@ -112,6 +112,24 @@
       box-shadow: 0 0 0 3px rgba(245,197,24,.25);
     }
 
+    input[type="date"] {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid var(--yellow);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: #FFFDF5;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+    input[type="date"]:focus {
+      border-color: var(--yellow-dark);
+      box-shadow: 0 0 0 3px rgba(245,197,24,.25);
+    }
+
     input[type="time"] {
       display: block;
       width: 100%;
@@ -179,7 +197,7 @@
       <div class="badge">千葉大学 無断駐輪対策</div>
       <h1>🚲 駐輪許可証<br>リマインダー</h1>
       <p class="desc">
-        明日の登校時刻をセットすると、<br>
+        登校日と時刻をセットすると、<br>
         その時刻に許可証購入をメールでお知らせします。
       </p>
     </div>
@@ -189,11 +207,17 @@
     <div class="form-group">
       <label class="form-label" for="email-input">📧 メールアドレス</label>
       <input type="email" id="email-input" placeholder="example@g.chiba-u.jp" autocomplete="email">
-      <p class="hint">翌朝このアドレスに通知が届きます</p>
+      <p class="hint">このアドレスに通知が届きます</p>
     </div>
 
     <div class="form-group">
-      <label class="form-label" for="time-input">🕐 明日の登校時刻</label>
+      <label class="form-label" for="date-input">📅 登校日</label>
+      <input type="date" id="date-input">
+      <p class="hint">通知を受け取りたい日を選んでください</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="time-input">🕐 登校時刻</label>
       <input type="time" id="time-input" value="08:30">
       <p class="hint">この時刻にメールが届きます</p>
     </div>
@@ -218,11 +242,24 @@
 <script>
 fetch('/track-access').catch(() => {});
 
+// Set default date to tomorrow
+(function() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const yyyy = tomorrow.getFullYear();
+  const mm   = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dd   = String(tomorrow.getDate()).padStart(2, '0');
+  document.getElementById('date-input').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('date-input').min = `${yyyy}-${mm}-${dd}`;
+})();
+
 async function submitEmail() {
   const email = document.getElementById('email-input').value.trim();
+  const date  = document.getElementById('date-input').value;
   const time  = document.getElementById('time-input').value;
 
   if (!email) { setStatus('メールアドレスを入力してください。', 'err'); return; }
+  if (!date)  { setStatus('登校日を選択してください。', 'err'); return; }
   if (!time)  { setStatus('登校時刻を入力してください。', 'err'); return; }
 
   const btn = document.getElementById('submit-btn');
@@ -234,15 +271,14 @@ async function submitEmail() {
     const res = await fetch('/subscribe-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, scheduledTime: time })
+      body: JSON.stringify({ email, scheduledDate: date, scheduledTime: time })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
 
     const [hh, mm] = time.split(':');
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dateStr = `${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日`;
+    const [yyyy, mo, dd] = date.split('-');
+    const dateStr = `${parseInt(mo)}月${parseInt(dd)}日`;
 
     document.getElementById('success-detail').textContent =
       `${dateStr} ${hh}:${mm} に「${email}」へ通知メールをお送りします。`;
