@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+subscriptions.json
+logs.json
+.env
+.env.local
+preview-server.js
+preview_nudge.py
+リマインダーアイデア/

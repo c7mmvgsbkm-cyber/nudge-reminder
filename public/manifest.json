@@ -1,0 +1,18 @@
+{
+  "name": "駐輪許可証リマインダー",
+  "short_name": "駐輪リマインダー",
+  "description": "千葉大学 無断駐輪対策 通知リマインダー",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDE7",
+  "theme_color": "#F5C518",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

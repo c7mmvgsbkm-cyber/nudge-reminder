@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="駐輪リマインダー">
+  <meta name="theme-color" content="#F5C518">
+  <link rel="manifest" href="/manifest.json">
+  <title>駐輪許可証リマインダー - 千葉大学</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --yellow: #F5C518;
+      --yellow-dark: #d4a800;
+      --yellow-light: #FFFDE7;
+      --text: #212121;
+      --text-muted: #757575;
+      --border: #E0E0E0;
+      --radius: 14px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN',
+                   'Hiragino Sans', 'Noto Sans JP', sans-serif;
+      background: var(--yellow-light);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    /* ---- カード ---- */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 28px 24px 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.10);
+    }
+
+    /* ---- ヘッダー ---- */
+    .header { text-align: center; margin-bottom: 20px; }
+
+    .badge {
+      display: inline-block;
+      background: var(--yellow);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .header .desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    /* ---- アラート ---- */
+    .alert {
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13.5px;
+      line-height: 1.65;
+      margin-bottom: 16px;
+    }
+    .alert strong { display: block; margin-bottom: 4px; }
+    .alert-warn  { background: #FFF8E1; border: 1px solid #FFD54F; color: #6D4C00; }
+    .alert-err   { background: #FFEBEE; border: 1px solid #EF9A9A; color: #B71C1C; }
+    .alert-ok    { background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; }
+
+    /* ---- iOS ホーム追加ガイド ---- */
+    .guide-steps { margin-top: 12px; }
+    .guide-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .step-num {
+      flex-shrink: 0;
+      background: var(--yellow);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 11px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    /* ---- フォーム ---- */
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .time-wrapper {
+      position: relative;
+      margin-bottom: 6px;
+    }
+
+    input[type="time"] {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 28px;
+      font-weight: 300;
+      text-align: center;
+      border: 2px solid var(--yellow);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text);
+      background: #FFFDF5;
+      transition: border-color .15s, box-shadow .15s;
+      -webkit-appearance: none;
+    }
+
+    input[type="time"]:focus {
+      border-color: var(--yellow-dark);
+      box-shadow: 0 0 0 3px rgba(245,197,24,.25);
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* ---- ボタン ---- */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      background: var(--yellow);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .15s, transform .1s, opacity .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:hover  { background: var(--yellow-dark); }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ---- 完了画面 ---- */
+    .success-view { text-align: center; display: none; }
+    .success-icon { font-size: 60px; margin-bottom: 14px; }
+    .success-view h2 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+    .success-view p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+
+    /* ---- フッター ---- */
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      color: #BDBDBD;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- LINE ブラウザ警告 -->
+  <div id="warn-line" class="alert alert-warn" style="display:none">
+    <strong>⚠️ LINEブラウザでは通知を設定できません</strong>
+    右上の「…」→「他のブラウザで開く」→ <strong>Safari</strong> を選択して開き直してください。
+  </div>
+
+  <!-- 古い iOS 警告 -->
+  <div id="warn-old-ios" class="alert alert-err" style="display:none">
+    <strong>❌ このiOSバージョンは通知に対応していません</strong>
+    Web通知には <strong>iOS 16.4 以上</strong> が必要です。設定アプリからソフトウェアアップデートをご確認ください。
+  </div>
+
+  <!-- 非対応ブラウザ警告 -->
+  <div id="warn-unsupported" class="alert alert-err" style="display:none">
+    <strong>❌ このブラウザは通知に対応していません</strong>
+    Safariの最新バージョンでお試しください。
+  </div>
+
+  <!-- メインコンテンツ -->
+  <div id="main">
+    <div class="header">
+      <div class="badge">千葉大学 無断駐輪対策</div>
+      <h1>🚲 駐輪許可証<br>リマインダー</h1>
+      <p class="desc">
+        明日の登校時刻をセットすると、<br>
+        その時刻に許可証購入を通知でお知らせします。
+      </p>
+    </div>
+
+    <hr>
+
+    <!-- iOS ホーム画面追加ガイド（スタンドアロン未満の場合のみ表示） -->
+    <div id="ios-guide" class="alert alert-warn" style="display:none">
+      <strong>📱 iOSで通知を受け取るには（重要）</strong>
+      まずこのページをホーム画面に追加し、ホーム画面のアイコンから開いてください。
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div>Safari 下部の <strong>共有ボタン（□↑）</strong> をタップ</div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div><strong>「ホーム画面に追加」</strong> をタップ → 「追加」</div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div>ホーム画面に追加されたアイコンからアプリを開き、ここで設定する</div>
+        </div>
+      </div>
+    </div>
+
+    <label class="form-label" for="time-input">🕐 明日の登校時刻</label>
+    <div class="time-wrapper">
+      <input type="time" id="time-input" value="08:30">
+    </div>
+    <p class="hint">この時刻に「今日は許可証を買おう！」と通知が届きます</p>
+
+    <button class="btn" id="subscribe-btn" onclick="subscribe()">
+      🔔 通知を設定する
+    </button>
+
+    <div id="status-msg"></div>
+  </div>
+
+  <!-- 完了画面 -->
+  <div id="success-view" class="success-view">
+    <div class="success-icon">✅</div>
+    <h2>設定完了！</h2>
+    <p id="success-detail"></p>
+    <button class="btn" onclick="resetForm()">もう一度設定する</button>
+  </div>
+
+  <div class="footer">千葉大学 キャンパス整備係</div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// 環境検出
+// ---------------------------------------------------------------------------
+function isLineBrowser() {
+  return /Line\//i.test(navigator.userAgent);
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function getIOSVersion() {
+  const m = navigator.userAgent.match(/OS (\d+)[_.](\d+)/);
+  return m ? { major: parseInt(m[1]), minor: parseInt(m[2]) } : null;
+}
+
+function isStandalone() {
+  return window.navigator.standalone === true ||
+         window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function isPushSupported() {
+  return 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+// ---------------------------------------------------------------------------
+// 初期化
+// ---------------------------------------------------------------------------
+function init() {
+  // QR アクセスログ
+  fetch('/track-access').catch(() => {});
+
+  if (isLineBrowser()) {
+    show('warn-line');
+    hide('main');
+    return;
+  }
+
+  if (isIOS()) {
+    const ver = getIOSVersion();
+    if (ver) {
+      const oldIOS = ver.major < 16 || (ver.major === 16 && ver.minor < 4);
+      if (oldIOS) {
+        show('warn-old-ios');
+        hide('main');
+        return;
+      }
+    }
+    // iOS 16.4+ でスタンドアロンでない場合はガイドを表示
+    if (!isStandalone()) {
+      show('ios-guide');
+    }
+  }
+
+  if (!isPushSupported()) {
+    show('warn-unsupported');
+    document.getElementById('subscribe-btn').disabled = true;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 購読処理
+// ---------------------------------------------------------------------------
+async function subscribe() {
+  const timeVal = document.getElementById('time-input').value;
+  if (!timeVal) {
+    setStatus('時刻を入力してください。', 'err');
+    return;
+  }
+
+  const btn = document.getElementById('subscribe-btn');
+  btn.disabled = true;
+  btn.textContent = '設定中…';
+  clearStatus();
+
+  try {
+    // Service Worker 登録
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+
+    // 通知許可をリクエスト
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      setStatus('通知の許可が必要です。ブラウザ設定から通知を許可してください。', 'err');
+      resetBtn(btn);
+      return;
+    }
+
+    // VAPID 公開鍵を取得
+    const keyRes = await fetch('/vapid-public-key');
+    if (!keyRes.ok) throw new Error('公開鍵の取得に失敗しました');
+    const { publicKey } = await keyRes.json();
+
+    // Push 購読
+    const pushSub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+
+    // サーバーに登録
+    const postRes = await fetch('/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: pushSub.toJSON(), scheduledTime: timeVal })
+    });
+    if (!postRes.ok) throw new Error('サーバーへの登録に失敗しました');
+
+    // 成功表示
+    const [hh, mm] = timeVal.split(':');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = `${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日`;
+
+    document.getElementById('success-detail').textContent =
+      `${dateStr} ${hh}:${mm} に「駐輪許可証のお知らせ」通知が届きます。`;
+
+    hide('main');
+    show('success-view');
+    document.getElementById('success-view').style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    setStatus('エラーが発生しました。再度お試しください。', 'err');
+    resetBtn(btn);
+  }
+}
+
+function resetForm() {
+  show('main');
+  hide('success-view');
+  resetBtn(document.getElementById('subscribe-btn'));
+  clearStatus();
+}
+
+// ---------------------------------------------------------------------------
+// UI ヘルパー
+// ---------------------------------------------------------------------------
+function show(id) { document.getElementById(id).style.display = ''; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function setStatus(msg, type) {
+  document.getElementById('status-msg').innerHTML =
+    `<div class="alert alert-${type}" style="margin-top:16px">${msg}</div>`;
+}
+
+function clearStatus() {
+  document.getElementById('status-msg').innerHTML = '';
+}
+
+function resetBtn(btn) {
+  btn.disabled = false;
+  btn.textContent = '🔔 通知を設定する';
+}
+
+// VAPID 公開鍵を Uint8Array に変換
+function urlBase64ToUint8Array(base64) {
+  const padding = '='.repeat((4 - base64.length % 4) % 4);
+  const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(b64);
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+// ---------------------------------------------------------------------------
+init();
+</script>
+</body>
+</html>
