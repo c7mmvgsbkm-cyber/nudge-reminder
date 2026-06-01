@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const webpush = require('web-push');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
@@ -22,22 +22,14 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 // ---------------------------------------------------------------------------
-// メール設定
+// メール設定 (Resend)
 // ---------------------------------------------------------------------------
-let mailer = null;
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-  mailer = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
-  console.log('メール送信: 有効');
+let resend = null;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('メール送信: 有効 (Resend)');
 } else {
-  console.warn('警告: SMTP_USER / SMTP_PASS が未設定です。メール送信は無効です。');
+  console.warn('警告: RESEND_API_KEY が未設定です。メール送信は無効です。');
 }
 
 // ---------------------------------------------------------------------------
@@ -100,7 +92,7 @@ app.post('/subscribe-email', (req, res) => {
   if (!/^\d{2}:\d{2}$/.test(scheduledTime)) {
     return res.status(400).json({ error: '時刻の形式が不正です（HH:MM）' });
   }
-  if (!mailer) {
+  if (!resend) {
     return res.status(503).json({ error: 'メール送信が設定されていません' });
   }
 
@@ -173,17 +165,16 @@ cron.schedule('* * * * *', async () => {
   const now = new Date();
 
   // --- メール通知 ---
-  if (mailer) {
+  if (resend) {
     const emailSubs = readJSON(EMAIL_SUBS_FILE);
     let emailChanged = false;
     for (const sub of emailSubs) {
       if (sub.sent || new Date(sub.targetAt) > now) continue;
       try {
-        await mailer.sendMail({
-          from: `"千葉大学 駐輪リマインダー" <${process.env.SMTP_USER}>`,
+        await resend.emails.send({
+          from: '千葉大学 駐輪リマインダー <onboarding@resend.dev>',
           to: sub.email,
           subject: '駐輪許可証のお知らせ',
-          text: '今日は忘れずに許可証を買おう！\n\n千葉大学 キャンパス整備係',
           html: `<p style="font-size:16px">🚲 <strong>今日は忘れずに許可証を買おう！</strong></p><p style="color:#888;font-size:12px">千葉大学 キャンパス整備係</p>`
         });
         sub.sent = true;
