@@ -206,10 +206,17 @@
     Web通知には <strong>iOS 16.4 以上</strong> が必要です。設定アプリからソフトウェアアップデートをご確認ください。
   </div>
 
-  <!-- 非対応ブラウザ警告 -->
+  <!-- カメラアプリの簡易ブラウザ警告（iOS） -->
+  <div id="warn-camera-browser" class="alert alert-warn" style="display:none">
+    <strong>📷 カメラアプリのブラウザでは使えません</strong><br>
+    <strong>Safari</strong> アプリを直接起動して、アドレスバーに入力してください：<br>
+    <span style="display:inline-block;margin-top:8px;background:#f5f5f5;padding:6px 12px;border-radius:6px;font-family:monospace;font-size:13px;color:#333">nudge-reminder.onrender.com</span>
+  </div>
+
+  <!-- 非対応ブラウザ警告（Android等） -->
   <div id="warn-unsupported" class="alert alert-err" style="display:none">
     <strong>❌ このブラウザは通知に対応していません</strong>
-    Safariの最新バージョンでお試しください。
+    Chrome または Safariの最新バージョンでお試しください。
   </div>
 
   <!-- メインコンテンツ -->
@@ -319,10 +326,24 @@ function init() {
         return;
       }
     }
-    // iOS 16.4+ でスタンドアロンでない場合はガイドを表示
-    if (!isStandalone()) {
-      show('ios-guide');
+
+    // Push非対応 → カメラアプリの簡易ブラウザ（SFSafariViewController）と判定
+    if (!isPushSupported()) {
+      show('warn-camera-browser');
+      hide('main');
+      return;
     }
+
+    // iOS 17.4未満はホーム画面追加が必要
+    const needsStandalone = ver && (ver.major < 17 || (ver.major === 17 && ver.minor < 4));
+    if (needsStandalone && !isStandalone()) {
+      show('ios-guide');
+      document.getElementById('subscribe-btn').disabled = true;
+      return;
+    }
+
+    // iOS 17.4以上はSafariで直接使える → そのまま表示
+    return;
   }
 
   if (!isPushSupported()) {
