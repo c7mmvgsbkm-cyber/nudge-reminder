@@ -242,15 +242,20 @@
 <script>
 fetch('/track-access').catch(() => {});
 
-// Set default date to tomorrow
+// Set default date to today, default time to 10 minutes from now
 (function() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const yyyy = tomorrow.getFullYear();
-  const mm   = String(tomorrow.getMonth() + 1).padStart(2, '0');
-  const dd   = String(tomorrow.getDate()).padStart(2, '0');
-  document.getElementById('date-input').value = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('date-input').min = `${yyyy}-${mm}-${dd}`;
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm   = String(now.getMonth() + 1).padStart(2, '0');
+  const dd   = String(now.getDate()).padStart(2, '0');
+  const today = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('date-input').value = today;
+  document.getElementById('date-input').min = today;
+
+  const later = new Date(now.getTime() + 10 * 60 * 1000);
+  const hh = String(later.getHours()).padStart(2, '0');
+  const mi = String(later.getMinutes()).padStart(2, '0');
+  document.getElementById('time-input').value = `${hh}:${mi}`;
 })();
 
 async function submitEmail() {
