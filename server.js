@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const webpush = require('web-push');
-const { Resend } = require('resend');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
@@ -22,14 +21,29 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 }
 
 // ---------------------------------------------------------------------------
-// メール設定 (Resend)
+// メール設定 (Brevo)
 // ---------------------------------------------------------------------------
-let resend = null;
-if (process.env.RESEND_API_KEY) {
-  resend = new Resend(process.env.RESEND_API_KEY);
-  console.log('メール送信: 有効 (Resend)');
+const BREVO_API_KEY = process.env.BREVO_API_KEY || null;
+if (BREVO_API_KEY) {
+  console.log('メール送信: 有効 (Brevo)');
 } else {
-  console.warn('警告: RESEND_API_KEY が未設定です。メール送信は無効です。');
+  console.warn('警告: BREVO_API_KEY が未設定です。メール送信は無効です。');
+}
+
+async function sendBrevoEmail(to, subject, html) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      sender: { name: '千葉大学 駐輪リマインダー', email: 'sp.nudgeproject@gmail.com' },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(JSON.stringify(data));
+  return data;
 }
 
 // ---------------------------------------------------------------------------
@@ -92,7 +106,7 @@ app.post('/subscribe-email', (req, res) => {
   if (!/^\d{2}:\d{2}$/.test(scheduledTime)) {
     return res.status(400).json({ error: '時刻の形式が不正です（HH:MM）' });
   }
-  if (!resend) {
+  if (!BREVO_API_KEY) {
     return res.status(503).json({ error: 'メール送信が設定されていません' });
   }
 
@@ -165,22 +179,20 @@ cron.schedule('* * * * *', async () => {
   const now = new Date();
 
   // --- メール通知 ---
-  if (resend) {
+  if (BREVO_API_KEY) {
     const emailSubs = readJSON(EMAIL_SUBS_FILE);
     let emailChanged = false;
     for (const sub of emailSubs) {
       if (sub.sent || new Date(sub.targetAt) > now) continue;
       try {
-        const { data, error } = await resend.emails.send({
-          from: '千葉大学 駐輪リマインダー <onboarding@resend.dev>',
-          to: sub.email,
-          subject: '駐輪許可証のお知らせ',
-          html: `<p style="font-size:16px">🚲 <strong>今日は忘れずに許可証を買おう！</strong></p><p style="color:#888;font-size:12px">千葉大学 キャンパス整備係</p>`
-        });
-        if (error) throw new Error(JSON.stringify(error));
+        await sendBrevoEmail(
+          sub.email,
+          '駐輪許可証のお知らせ',
+          `<p style="font-size:16px">🚲 <strong>今日は忘れずに許可証を買おう！</strong></p><p style="color:#888;font-size:12px">千葉大学 キャンパス整備係</p>`
+        );
         sub.sent = true;
         appendLog('notifications', { type: 'email', status: 'success', scheduled_time: sub.scheduledTime });
-        console.log(`[${now.toISOString()}] メール送信成功: ${sub.email} id=${data?.id}`);
+        console.log(`[${now.toISOString()}] メール送信成功: ${sub.email}`);
       } catch (err) {
         console.error(`[${now.toISOString()}] メール送信失敗:`, err.message);
         appendLog('notifications', { type: 'email', status: 'failed', error: err.message });
