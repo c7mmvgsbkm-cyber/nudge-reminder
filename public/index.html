@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#F5C518">
-  <link rel="manifest" href="/manifest.json">
   <title>駐輪許可証リマインダー - 千葉大学</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,6 +16,7 @@
       --text-muted: #757575;
       --border: #E0E0E0;
       --radius: 14px;
+      --line-green: #06C755;
     }
 
     body {
@@ -71,115 +71,91 @@
 
     hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
 
-    .alert {
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13.5px;
-      line-height: 1.65;
-      margin-bottom: 16px;
-    }
-    .alert strong { display: block; margin-bottom: 4px; }
-    .alert-warn { background: #FFF8E1; border: 1px solid #FFD54F; color: #6D4C00; }
-    .alert-err  { background: #FFEBEE; border: 1px solid #EF9A9A; color: #B71C1C; }
-    .alert-ok   { background: #E8F5E9; border: 1px solid #A5D6A7; color: #1B5E20; }
-
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      letter-spacing: 0.02em;
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
     }
 
-    .form-group { margin-bottom: 16px; }
-
-    input[type="email"] {
-      display: block;
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 16px;
-      border: 2px solid var(--yellow);
-      border-radius: 10px;
-      outline: none;
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14px;
       color: var(--text);
-      background: #FFFDF5;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
-    }
-    input[type="email"]:focus {
-      border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 3px rgba(245,197,24,.25);
-    }
-
-    input[type="date"] {
-      display: block;
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 16px;
-      border: 2px solid var(--yellow);
-      border-radius: 10px;
-      outline: none;
-      color: var(--text);
-      background: #FFFDF5;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
-    }
-    input[type="date"]:focus {
-      border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 3px rgba(245,197,24,.25);
-    }
-
-    input[type="time"] {
-      display: block;
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 28px;
-      font-weight: 300;
-      text-align: center;
-      border: 2px solid var(--yellow);
-      border-radius: 10px;
-      outline: none;
-      color: var(--text);
-      background: #FFFDF5;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
-    }
-    input[type="time"]:focus {
-      border-color: var(--yellow-dark);
-      box-shadow: 0 0 0 3px rgba(245,197,24,.25);
-    }
-
-    .hint {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 6px;
       line-height: 1.5;
     }
 
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 15px;
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
       background: var(--yellow);
-      color: var(--text);
-      font-size: 15px;
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .step-text strong {
+      display: block;
       font-weight: 700;
-      border: none;
+      margin-bottom: 2px;
+    }
+
+    .step-text small {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .line-btn-wrap {
+      text-align: center;
+      margin: 8px 0 16px;
+    }
+
+    .line-btn-wrap a img {
+      width: 200px;
+      border-radius: 8px;
+    }
+
+    .line-id {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .example-box {
+      background: #F8F8F8;
       border-radius: 10px;
-      cursor: pointer;
-      transition: background .15s, transform .1s, opacity .15s;
-      -webkit-tap-highlight-color: transparent;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.8;
       margin-top: 4px;
     }
-    .btn:hover  { background: var(--yellow-dark); }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-    .success-view { text-align: center; display: none; }
-    .success-icon { font-size: 60px; margin-bottom: 14px; }
-    .success-view h2 { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
-    .success-view p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+    .example-box .label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .bubble {
+      display: inline-block;
+      background: var(--line-green);
+      color: #fff;
+      border-radius: 18px 18px 18px 4px;
+      padding: 6px 14px;
+      margin: 2px 0;
+      font-size: 14px;
+    }
 
     .footer {
       margin-top: 20px;
@@ -191,49 +167,55 @@
 </head>
 <body>
 <div class="card">
-
-  <div id="main">
-    <div class="header">
-      <div class="badge">千葉大学 無断駐輪対策</div>
-      <h1>🚲 駐輪許可証<br>リマインダー</h1>
-      <p class="desc">
-        登校日と時刻をセットすると、<br>
-        その時刻に許可証購入をメールでお知らせします。
-      </p>
-    </div>
-
-    <hr>
-
-    <div class="form-group">
-      <label class="form-label" for="email-input">📧 メールアドレス</label>
-      <input type="email" id="email-input" placeholder="example@g.chiba-u.jp" autocomplete="email">
-      <p class="hint">このアドレスに通知が届きます</p>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="date-input">📅 登校日</label>
-      <input type="date" id="date-input">
-      <p class="hint">通知を受け取りたい日を選んでください</p>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label" for="time-input">🕐 登校時刻</label>
-      <input type="time" id="time-input" value="08:30">
-      <p class="hint">この時刻にメールが届きます</p>
-    </div>
-
-    <button class="btn" id="submit-btn" onclick="submitEmail()">
-      ✉️ リマインダーを設定する
-    </button>
-
-    <div id="status-msg"></div>
+  <div class="header">
+    <div class="badge">千葉大学 無断駐輪対策</div>
+    <h1>🚲 駐輪許可証<br>リマインダー</h1>
+    <p class="desc">
+      LINEで友だち追加して<br>
+      登校時刻を送るだけ！
+    </p>
   </div>
 
-  <div id="success-view" class="success-view">
-    <div class="success-icon">✅</div>
-    <h2>設定完了！</h2>
-    <p id="success-detail"></p>
-    <button class="btn" onclick="resetForm()">もう一度設定する</button>
+  <hr>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">1</span>
+      <div class="step-text">
+        <strong>下のボタンで友だち追加</strong>
+        <small>LINEアプリが開きます</small>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">2</span>
+      <div class="step-text">
+        <strong>LINEで登校時刻を送信</strong>
+        <small>「明日 08:30」のように送るだけ</small>
+      </div>
+    </div>
+    <div class="step">
+      <span class="step-num">3</span>
+      <div class="step-text">
+        <strong>当日その時刻に通知が届く</strong>
+        <small>バイブレーション・音でお知らせ</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="line-btn-wrap">
+    <a href="https://line.me/R/ti/p/@786xlcyh">
+      <img src="https://scdn.line-apps.com/n/line_add_friends/btn/ja.png" alt="友だち追加">
+    </a>
+    <p class="line-id">ID: @786xlcyh</p>
+  </div>
+
+  <hr>
+
+  <div class="example-box">
+    <div class="label">送り方の例</div>
+    <div class="bubble">明日 08:30</div><br>
+    <div class="bubble">今日 17:00</div><br>
+    <div class="bubble">6/5 08:30</div>
   </div>
 
   <div class="footer">千葉大学 キャンパス整備係</div>
@@ -241,78 +223,6 @@
 
 <script>
 fetch('/track-access').catch(() => {});
-
-// Set default date to today, default time to 10 minutes from now
-(function() {
-  const now = new Date();
-  const yyyy = now.getFullYear();
-  const mm   = String(now.getMonth() + 1).padStart(2, '0');
-  const dd   = String(now.getDate()).padStart(2, '0');
-  const today = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('date-input').value = today;
-  document.getElementById('date-input').min = today;
-
-  const later = new Date(now.getTime() + 1 * 60 * 1000);
-  const hh = String(later.getHours()).padStart(2, '0');
-  const mi = String(later.getMinutes()).padStart(2, '0');
-  document.getElementById('time-input').value = `${hh}:${mi}`;
-})();
-
-async function submitEmail() {
-  const email = document.getElementById('email-input').value.trim();
-  const date  = document.getElementById('date-input').value;
-  const time  = document.getElementById('time-input').value;
-
-  if (!email) { setStatus('メールアドレスを入力してください。', 'err'); return; }
-  if (!date)  { setStatus('登校日を選択してください。', 'err'); return; }
-  if (!time)  { setStatus('登校時刻を入力してください。', 'err'); return; }
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = '送信中…';
-  clearStatus();
-
-  try {
-    const res = await fetch('/subscribe-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, scheduledDate: date, scheduledTime: time })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'エラーが発生しました');
-
-    const [hh, mm] = time.split(':');
-    const [yyyy, mo, dd] = date.split('-');
-    const dateStr = `${parseInt(mo)}月${parseInt(dd)}日`;
-
-    document.getElementById('success-detail').textContent =
-      `${dateStr} ${hh}:${mm} に「${email}」へ通知メールをお送りします。`;
-
-    document.getElementById('main').style.display = 'none';
-    document.getElementById('success-view').style.display = 'block';
-
-  } catch (err) {
-    setStatus(err.message, 'err');
-    btn.disabled = false;
-    btn.textContent = '✉️ リマインダーを設定する';
-  }
-}
-
-function resetForm() {
-  document.getElementById('main').style.display = '';
-  document.getElementById('success-view').style.display = 'none';
-  document.getElementById('submit-btn').disabled = false;
-  document.getElementById('submit-btn').textContent = '✉️ リマインダーを設定する';
-  clearStatus();
-}
-
-function setStatus(msg, type) {
-  document.getElementById('status-msg').innerHTML =
-    `<div class="alert alert-${type}" style="margin-top:16px">${msg}</div>`;
-}
-function clearStatus() {
-  document.getElementById('status-msg').innerHTML = '';
-}
 </script>
 </body>
 </html>

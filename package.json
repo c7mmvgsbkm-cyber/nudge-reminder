@@ -1,11 +1,10 @@
 {
   "name": "nudge-reminder",
-  "version": "1.0.0",
-  "description": "千葉大学 無断駐輪対策 Web Push通知システム",
+  "version": "2.0.0",
+  "description": "千葉大学 無断駐輪対策 LINE通知システム",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "generate-keys": "node -e \"const wp=require('web-push');const k=wp.generateVAPIDKeys();console.log('VAPID_PUBLIC_KEY='+k.publicKey+'\\nVAPID_PRIVATE_KEY='+k.privateKey);\""
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -13,7 +12,6 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
-    "node-cron": "^3.0.3",
-    "web-push": "^3.6.7"
+    "node-cron": "^3.0.3"
   }
 }
